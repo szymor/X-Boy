@@ -60,7 +60,7 @@ I could not manage to download the image from the link above, so I (vamastah) cr
 	- [copy the kernel and the device tree](#写入内核和设备树)
 	- [untar rootfs](#写入根文件系统)
 - [Emulator compilation](#编译模拟器)
-	- [compile gpsp](#编译-gpsp)
+	- [compile gpSP](#编译-gpsp)
 	- [copy the executable](#复制可执行文件)
 - [System configuration](#系统配置)
 	- [automount fat partition](#自动挂载-fat-分区)
@@ -189,39 +189,39 @@ arm-linux-gnueabihf-gcc -v
 mkdir ~/v3s && cd ~/v3s
 git clone https://github.com/Lichee-Pi/u-boot.git -b v3s-current
 ```
-uboot 的目录结构
+Directory structure of U-Boot
 
 ```
-├── api                存放uboot提供的API接口函数
-├── arch               平台相关的部分我们只需要关心这个目录下的ARM文件夹
+├── api                the interface of the functions provided by U-Boot
+├── arch               platform-related parts, we only care about the 'arm' subfolder
 │   ├──arm
 │   │   └──cpu
 │   │   │   └──armv7
 │   │   └──dts
-│   │   │   └──*.dts 存放设备的dts,也就是设备配置相关的引脚信息
-├── board              对于不同的平台的开发板对应的代码
-├── cmd                顾名思义，大部分的命令的实现都在这个文件夹下面。
-├── common             公共的代码
-├── configs            各个板子的对应的配置文件都在里面，我们的Lichee配置也在里面
-├── disk               对磁盘的一些操作都在这个文件夹里面，例如分区等。
-├── doc                参考文档，这里面有很多跟平台等相关的使用文档。
-├── drivers            各式各样的驱动文件都在这里面
-├── dts                一种树形结构（device tree）这个应该是uboot新的语法
-├── examples           官方给出的一些样例程序
-├── fs                 文件系统，uboot会用到的一些文件系统
-├── include            头文件，所有的头文件都在这个文件夹下面
-├── lib                一些常用的库文件在这个文件夹下面
-├── Licenses           这个其实跟编译无关了，就是一些license的声明
-├── net                网络相关的，需要用的小型网络协议栈
-├── post              上电自检程序
-├── scripts           编译脚本和Makefile文件
-├── spl               second program loader，即相当于二级uboot启动。
-├── test              小型的单元测试程序。
-└── tools             里面有很多uboot常用的工具。
+│   │   │   └──*.dts   device tree source, e.g. pin information of the device
+├── board              source code specific for development boards
+├── cmd                implementation of U-Boot commands
+├── common             common code
+├── configs            configuration files for different devboards (including Lichee)
+├── disk               implementation of some disk operations such as partitioning
+├── doc                reference documentation, including platform-related documents
+├── drivers            source code of drivers
+├── dts                Kconfig and build scripts for device tree
+├── examples           official sample programs
+├── fs                 implementation of different file systems supported by U-Boot
+├── include            header files
+├── lib                commonly used libraries
+├── Licenses           licenses, legal documents
+├── net                network stack
+├── post               power-on self-test program
+├── scripts            compile scripts and makefiles
+├── spl                secondary program loader，the second stage of bootloader
+├── test               unit tests
+└── tools              tools commonly used by U-Boot
 ```
 ### 修改 include/configs/sun8i.h
 
-在文件中添加
+In the file add:
 
 ```
 #define CONFIG_BOOTCOMMAND  "setenv bootm_boot_mode sec; " \
@@ -243,7 +243,7 @@ make ARCH=arm menuconfig
 time make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- 2>&1 | tee build.log
 ```
 
-在 uboot 顶层 Makefile 的 248 行，添加默认编译器，就可以直接用 make 编译了。
+If you add the default compiler in line 248 of the top-level Makefile, then you will be able to compile U-Boot by calling 'make' with no additional parameters.
 
 ```
 # set default to nothing for native builds
@@ -258,11 +258,11 @@ KCONFIG_CONFIG	?= .config
 export KCONFIG_CONFIG
 ```
 
-编译成功
+Compile successfully.
 
 ![](/images/3.jpg)
 
-后面编译好 kernel 和 rootfs 然后一起烧录
+The kernel and rootfs will be built in the later steps.
 
 ## 主线 Linux 编译
 
@@ -275,7 +275,7 @@ git clone -b zero-5.2.y https://github.com/Lichee-Pi/linux.git
 
 ### 修改顶层 Makefile
 
-在内核根目录下的 Makefile 364 行修改默认编译器，可以直接用 make 编译
+If you add the default compiler in line 364 of the top-level Makefile, you will be able to compile Linux by calling 'make' with no additional parameters.
 
 ```
 # ARCH		?= $(SUBARCH)
@@ -291,7 +291,7 @@ make licheepi_zero_defconfig
 make menuconfig
 ```
 
-勾选驱动
+Select the following drivers:
 
 ```
 Device Drivers  --->
@@ -307,9 +307,9 @@ Device Drivers  --->
                 <*>   Generic FB driver for TFT LCD displays
 ```
 
-修改设备树 arch/arm/boot/dts/sun8i-v3s-licheepi-zero.dts
+Modify the device tree arch/arm/boot/dts/sun8i-v3s-licheepi-zero.dts.
 
-在 chosen 中添加 /delete-node/ framebuffer@0; 删除原来的 simplefb 节点（ uboot 里有使能 fb 的操作，必须删除而不是 disable ）
+Add '/delete-node/ framebuffer@0' in the 'chosen' node. It removes the original simplefb node. The operation of enabling framebuffer in U-Boot needs to be deleted, not disabled. Example:
 
 ```
 chosen {
@@ -318,7 +318,7 @@ chosen {
 	};
 ```
 
-删除 &i2c0 节点
+Delete the &i2c0 node:
 
 ```
 &i2c0 {
@@ -331,9 +331,9 @@ chosen {
 };
 ```
 
-修改设备树 arch/arm/boot/dts/sun8i-v3s-licheepi-zero-dock.dts
+Modify the device tree arch/arm/boot/dts/sun8i-v3s-licheepi-zero-dock.dts.
 
-删除 &lradc 和 &i2c0 （ lradc 用不到，gt911 占用引脚和屏幕的 spi 引脚有冲突，所以删掉）
+Delete &lradc and &i2c0 - lradc is not used, the pin occupied by gt911 conflicts with the spi pin of the screen, so delete it:
 
 ```
 &lradc {
@@ -383,7 +383,7 @@ chosen {
 };
 ```
 
-在最后添加
+Add at the end:
 
 ```
 &spi0 {
@@ -405,11 +405,11 @@ chosen {
 };
 ```
 
-这样启动时的信息会通过 ili9341 LCD 显示
+In this way the information at startup will be displayed on the ili9341 LCD screen.
 
-5.2 内核需要修改 drivers/staging/fbtft/fbtft_core.c 的 fbtft_request_one_gpio() 方法，否则开机 log 会报申请 gpio 失败
+The kernel 5.2 needs to be modified, otherwise the boot log will report that the application for gpio failed. Change fbtft_request_one_gpio() in drivers/staging/fbtft/fbtft_core.c according to the example below.
 
-注意需要在该文件引入下面头文件，否则编译报错
+Note that the following header file needs to be introduced in the file above, otherwise an error will be reported when compiling:
 
 ```
 #include <linux/of_gpio.h>
@@ -456,9 +456,7 @@ static int fbtft_request_one_gpio(struct fbtft_par *par,
 }
 ```
 
-修改引脚 bug
-
-fbtft_bus.c 的 fbtft_write_vmem16_bus8() 方法
+Fix the pin polarity bug in the function fbtft_write_vmem16_bus8() in the file fbtft_bus.c:
 
 ```
 int fbtft_write_vmem16_bus8(struct fbtft_par *par, size_t offset, size_t len)
@@ -527,9 +525,9 @@ make -j4 INSTALL_MOD_PATH=out modules_install
 make dtbs
 ```
 
-- 编译完成后，zImage 在 arch/arm/boot/ ，驱动模块在 out/
-- 设备树文件在 arch/arm/boot/dts/
-- dock板的设备树：sun8i-v3s-licheepi-zero-dock.dtb
+- after compiling, zImage is in arch/arm/boot/ and the driver module is in out/
+- device tree files reside in arch/arm/boot/dts/
+- dock board device tree: sun8i-v3s-licheepi-zero-dock.dtb
 
 ## Buildroot 根文件系统构建
 
@@ -617,7 +615,7 @@ Target packages  --->
 make -j4
 ```
 
-生成的根文件系统在 output/images/rootfs.tar
+The generated root filesystem is in output/images/rootfs.tar.
 
 ## TF 卡分区及烧录
 
