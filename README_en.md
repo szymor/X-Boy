@@ -478,7 +478,7 @@ int fbtft_write_vmem16_bus8(struct fbtft_par *par, size_t offset, size_t len)
  
 	if (par->gpio.dc)
 	{
-		//printk("dc拉高！\n");
+		//printk("dc goes up!\n");
 		gpiod_set_value(par->gpio.dc, 1);
 	}
 	/* non buffered write */
@@ -521,7 +521,7 @@ int fbtft_write_vmem16_bus8(struct fbtft_par *par, size_t offset, size_t len)
 make -j4
 make -j4 INSTALL_MOD_PATH=out modules
 make -j4 INSTALL_MOD_PATH=out modules_install
-# 修改了设备树文件后编译
+# compile after modifying the device tree
 make dtbs
 ```
 
@@ -622,40 +622,41 @@ The generated root filesystem is in output/images/rootfs.tar.
 ### TF 卡分区
 
 ```
-sudo fdisk -l     		# 首先查看电脑上已插入的TF卡的设备号（一般为 /dev/sdb1,下面以/dev/sdb1为例）
-sudo umount /dev/sdb1 	# 若自动挂载了TF设备，请先卸载(有多个分区则全部卸载)
+sudo fdisk -l           # check the device number of the inserted SD card (usually /dev/sdb1, it is used as an example below)
+sudo umount /dev/sdb1   # if the SD card is automatically mounted, unmount it (all partitions if more than one)
 sudo umount /dev/sdb2
-sudo fdisk /dev/sdb   	# 进行分区操作
-##### 操作步骤如下 #####
-# 若已存分区即按 d 删除各个分区
-# 通过 n 新建分区，第一分区暂且申请为16M(f1c100s)、32M(v3s)，剩下的空间都给第二分区
-	# 第一分区操作：n p 1 2048 +32M
-		# p 主分区、默认 1 分区、默认2048、+32M
-	# 第二分区操作：n 后面全部回车默认即可
-		# p 主分区、默认 2 分区、默认、默认剩下的全部空间
-# p 查询分区表确定是否分区成功
-# w 保存写入并退出
+sudo fdisk /dev/sdb     # perform partition operations
+##### Partition operation steps #####
+# if there are any partitions, press 'd' to delete each of them
+# create a new partition using 'n', set the first partition as 16M (f1c100s) or 32M (v3s)
+# give the remaining space to the second partition
+    # first partition operation: n p 1 2048 +32M
+        # p primary partition, default 1 partition, default 2048, +32M
+    # second partition operation: n, press Enter after 'n' to set defaults
+        # p primary partition, default 2 partition, default, all remaining space by default
+# p query the partition table to determine whether the partition has been created successfully
+# w save the partition table and exit
 ########################
 
-sudo mkfs.ext4 /dev/sdb1 # 将第一分区格式化成EXT4
-sudo mkfs.ext4 /dev/sdb2 # 将第二分区格式化成EXT4
+sudo mkfs.ext4 /dev/sdb1    # format the first partition as ext4
+sudo mkfs.ext4 /dev/sdb2    # format the second partition as ext4
 
-# 格式说明
-	# EXT4：只用于Linux系统的内部磁盘
-	# NTFS：与Windows共用的磁盘
-	# FAT：所有系统和设备共用的磁盘
+# examples of possible file systems
+    # ext4: used mostly for Linux-only partitions
+    # NTFS: partitions shared with Windows
+    # FAT: partitions shared by all systems and devices
 ```
 
-后期为了能够在 windows 上方便添加 rom ，使用 gparted 划分三个分区，最后一个分区为 fat 类型
+Later, in order to be able to add ROMs conveniently on Windows, use gparted to create the third FAT partition.
 
-安装并启动
+Install and run gparted:
 
 ```
 sudo apt-get install gparted
 sudo gparted
 ```
 
-分区如下
+The partitions are as follows:
 
 ![](/images/4.jpg)
 
@@ -668,14 +669,16 @@ sudo dd if=u-boot-sunxi-with-spl.bin of=/dev/sdb bs=1024 seek=8
 ### 写入内核和设备树
 
 ```
-sudo cp ~/v3s/linux/arch/arm/boot/zImage /挂载的tf卡第一个分区目录
-sudo cp ~/v3s/linux/arch/arm/boot/dts/sun8i-v3s-licheepi-zero-dock.dtb /挂载 tf 卡第一个分区目录
+# /dev/sdb1 - the first partition of the mounted SD card, it can be different on your system
+sudo cp ~/v3s/linux/arch/arm/boot/zImage /dev/sdb1
+sudo cp ~/v3s/linux/arch/arm/boot/dts/sun8i-v3s-licheepi-zero-dock.dtb /dev/sdb1
 ```
 
 ### 写入根文件系统
 
 ```
-sudo tar xvf ~/v3s/buildroot-2019.08/output/images/rootfs.tar -C /挂载 tf 卡第二个分区目录
+# /dev/sdb2 - the second partition of the mounted SD card, it can be different on your system
+sudo tar xvf ~/v3s/buildroot-2019.08/output/images/rootfs.tar -C /dev/sdb2
 ```
 
 ## 编译模拟器
@@ -691,15 +694,13 @@ make -j4
 ```
 ### 复制可执行文件
 
-将生成的可执行文件复制到挂载的 tf 卡第二个分区目录，gpsp 同级目录下必须包含 gba_bios.bin 和 game_config.txt 文件
+Copy the generated executable to a folder on the second partition of the SD card. The folder needs contain gba_bios.bin and game_config.txt files in order to run the emulator properly, i.e. create the folder 'gpsp' under /root, copy gpsp, gba_bios.bin and game_config.txt into the folder.
 
-例如：
-- 在 /root 下创建 gpsp 文件夹，将 gpsp、gba_bios.bin、game_config.txt 复制到 gpsp 文件夹中
-- 在 /root 下创建 fceux 文件夹，将 fceux 复制到 fceux 文件夹中
+The same applies for other emulators, e.g. if you want to have fceux, create the folder 'fceux' under /root and copy the fceux executable to the folder.
 
 ## 系统配置
 
-插入 TF 卡，开机
+Insert the SD card and mount it.
 
 ### 自动挂载 fat 分区
 
@@ -707,7 +708,7 @@ make -j4
 mkdir /root/roms
 vi /etc/fstab
 
-# 最后一行添加
+# add the last line
 /dev/mmcblk0p3  /root/roms      vfat    defaults        0       0
 ```
 
@@ -726,10 +727,10 @@ tty0::respawn:-/bin/sh
 ```
 vi /etc/init.d/S99runOnBoot
 
-# 添加
+# write the line below into the script mentioned above
 amixer -c 0 sset 'Headphone',0 60% unmute
 
-# 添加可执行权限
+# run in the shell - the line below adds executable permission for the script
 chmod +x /etc/init.d/S99runOnBoot
 ```
 
@@ -738,10 +739,10 @@ chmod +x /etc/init.d/S99runOnBoot
 ```
 vi /etc/profile
 
-# SDL 配置
+# SDL configuration - it disables the cursor in the SDL window
 export SDL_NOMOUSE=1
 
-# 启动模拟器
+# start the emulator
 /root/startup.sh
 ```
 
@@ -877,18 +878,18 @@ sudo tar xvf ~/v3s/buildroot-2019.08/output/images/rootfs.tar -C ~/img/rootfs
 
 ## References
 
-[全志V3S（荔枝派zero）学习笔记](https://blog.csdn.net/p1279030826/article/details/114981681)
+[Allwinner V3s (Lichee Pi Zero) study notes](https://blog.csdn.net/p1279030826/article/details/114981681)
 
-[荔枝派Zero V3s开发板入坑记录](https://whycan.com/t_561.html)
+[Lichee Pi Zero (V3s development board) quick start guide](https://whycan.com/t_561.html)
 
-[Linux系统中使用Xbox360手柄](http://t.zoukankan.com/beyonne-p-10932152.html)
+[How to use a Xbox 360 gamepad in Linux](http://t.zoukankan.com/beyonne-p-10932152.html)
 
-[f1c100s spi fbtft ILI9341屏配置](https://blog.csdn.net/qulang000/article/details/114686525)
+[F1C100S SPI fbtft ILI9341 screen configuration](https://blog.csdn.net/qulang000/article/details/114686525)
 
-[点屏之SPI屏 ili9341](https://www.kancloud.cn/lichee/lpi0/538999)
+[ILI9341 SPI screen](https://www.kancloud.cn/lichee/lpi0/538999)
 
-[嵌入式Linux--荔枝派Zero--V3s--ST7789v](https://blog.csdn.net/qq_28877125/article/details/120007416)
+[Embedded Linux - Lichee Pi Zero - V3s - ST7789v](https://blog.csdn.net/qq_28877125/article/details/120007416)
 
-[v3S驱动音频](https://blog.csdn.net/lengyuefeng212/article/details/120055703)
+[V3s audio driver](https://blog.csdn.net/lengyuefeng212/article/details/120055703)
 
-[制作imx6ull Linux系统的img镜像](https://blog.csdn.net/mzy2364/article/details/113364250)
+[Making an image of imx6ull Linux system](https://blog.csdn.net/mzy2364/article/details/113364250)
