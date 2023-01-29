@@ -37,17 +37,17 @@ I could not manage to download the image from the link above, so I (vamastah) cr
 		- [download the precompiled toolchain](#download-the-precompiled-toolchain)
 		- [untar the toolchain](#untar-the-toolchain)
 		- [configure environment variables](#configure-environment-variables)
-		- [install dependencies](#install-dependencies)
+		- [install toolchain dependencies](#install-toolchain-dependencies)
 		- [verify the installation](#verify-the-installation)
-- [U-Boot compilation](#uboot-编译)
-	- [download U-Boot](#获取-uboot)
-	- [modify include/configs/sun8i.h](#修改-includeconfigssun8ih)
-	- [compile U-Boot](#编译-uboot)
-- [Linux compilation](#主线-linux-编译)
-	- [download source code](#下载源码)
-	- [modify the top-level Makefile](#修改顶层-makefile)
-	- [configure ili9341 LCD](#配置-ili9341-lcd)
-	- [compile](#编译)
+- [U-Boot compilation](#u-boot-compilation)
+	- [download U-Boot](#download-u-boot)
+	- [modify include/configs/sun8i.h](#modify-includeconfigssun8ih)
+	- [compile U-Boot](#compile-uboot)
+- [Linux compilation](#linux-compilation)
+	- [download source code](#download-source-code)
+	- [modify the top-level Makefile](#modify-the-top-level-makefile)
+	- [configure ILI9341 LCD](#configure-ili9341-lcd)
+	- [compile](#compile)
 - [Buildroot rootfs building](#buildroot-根文件系统构建)
 	- [get Buildroot](#获取-buildroot)
 	- [basic configuration](#基本配置)
@@ -167,7 +167,7 @@ export PATH=$PATH:/usr/local/arm/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnuea
 # execute in the terminal
 source ~/.bashrc
 ```
-#### install dependencies
+#### install toolchain dependencies
 
 ```
 sudo apt-get install lsb-core lib32stdc++6
@@ -181,9 +181,9 @@ arm-linux-gnueabihf-gcc -v
 
 ![](/images/1.jpg)
 
-## uboot 编译
+## U-boot compilation
 
-### 获取 uboot
+### download uboot
 
 ```
 mkdir ~/v3s && cd ~/v3s
@@ -219,7 +219,7 @@ Directory structure of U-Boot
 ├── test               unit tests
 └── tools              tools commonly used by U-Boot
 ```
-### 修改 include/configs/sun8i.h
+### modify include/configs/sun8i.h
 
 In the file add:
 
@@ -234,7 +234,7 @@ In the file add:
 
 ![](/images/2.jpg)
 
-### 编译 uboot
+### compile U-Boot
 
 ```
 cd u-boot
@@ -264,16 +264,16 @@ Compile successfully.
 
 The kernel and rootfs will be built in the later steps.
 
-## 主线 Linux 编译
+## Linux compilation
 
-### 下载源码
+### download source code
 
 ```
 cd ~/v3s
 git clone -b zero-5.2.y https://github.com/Lichee-Pi/linux.git
 ```
 
-### 修改顶层 Makefile
+### modify the top-level Makefile
 
 If you add the default compiler in line 364 of the top-level Makefile, you will be able to compile Linux by calling 'make' with no additional parameters.
 
@@ -283,7 +283,7 @@ ARCH		?= arm
 CROSS_COMPILE	?= arm-linux-gnueabihf-
 ```
 
-### 配置 ili9341 LCD
+### configure ILI9341 LCD
 
 ```
 cd linux
@@ -515,7 +515,7 @@ int fbtft_write_vmem16_bus8(struct fbtft_par *par, size_t offset, size_t len)
 }
 ```
 
-### 编译
+### compile
 
 ```
 make -j4
@@ -529,9 +529,9 @@ make dtbs
 - device tree files reside in arch/arm/boot/dts/
 - dock board device tree: sun8i-v3s-licheepi-zero-dock.dtb
 
-## Buildroot 根文件系统构建
+## Buildroot rootfs building
 
-### 获取 Buildroot
+### get Buildroot
 
 ```
 cd ~/v3s
@@ -540,7 +540,7 @@ tar xvf buildroot-2019.08.tar.gz && cd buildroot-2019.08/
 make menuconfig
 ```
 
-### 基本配置
+### basic configuration
 
 ```
 Target options  --->
@@ -552,7 +552,7 @@ Target options  --->
 	ARM instruction set (ARM)  ---> 
 ```
 
-### 编译链工具配置
+### toolchain configuration
 
 ```
 Toolchain  --->
@@ -571,7 +571,7 @@ Toolchain  --->
 	[*] Enable MMU support (NEW) 
 ```
 
-### alsa、sdl、fbv配置
+### alsa, sdl, fbv configuration
 
 ```
 Target packages  --->
@@ -609,7 +609,7 @@ Target packages  --->
 		[*]     install playsound tool
 		[*]   SDL_TTF
 ```
-### 编译
+### build
 
 ```
 make -j4
@@ -617,9 +617,9 @@ make -j4
 
 The generated root filesystem is in output/images/rootfs.tar.
 
-## TF 卡分区及烧录
+## SD card partitioning
 
-### TF 卡分区
+### partition the SD card
 
 ```
 sudo fdisk -l           # check the device number of the inserted SD card (usually /dev/sdb1, it is used as an example below)
@@ -660,13 +660,13 @@ The partitions are as follows:
 
 ![](/images/4.jpg)
 
-### 烧录 uboot
+### burn U-Boot
 
 ```
 cd ~/v3s/u-boot/
 sudo dd if=u-boot-sunxi-with-spl.bin of=/dev/sdb bs=1024 seek=8
 ```
-### 写入内核和设备树
+### copy the kernel and the device tree
 
 ```
 # /dev/sdb1 - the first partition of the mounted SD card, it can be different on your system
@@ -674,16 +674,16 @@ sudo cp ~/v3s/linux/arch/arm/boot/zImage /dev/sdb1
 sudo cp ~/v3s/linux/arch/arm/boot/dts/sun8i-v3s-licheepi-zero-dock.dtb /dev/sdb1
 ```
 
-### 写入根文件系统
+### untar rootfs
 
 ```
 # /dev/sdb2 - the second partition of the mounted SD card, it can be different on your system
 sudo tar xvf ~/v3s/buildroot-2019.08/output/images/rootfs.tar -C /dev/sdb2
 ```
 
-## 编译模拟器
+## Emulator compilation
 
-### 编译 gpsp
+### compile gpSP
 
 ```
 cd ~/v3s
@@ -692,17 +692,17 @@ git clone https://github.com/hsinyuwang/gpsp.git
 cd gpsp/v3s
 make -j4
 ```
-### 复制可执行文件
+### copy the executable
 
 Copy the generated executable to a folder on the second partition of the SD card. The folder needs contain gba_bios.bin and game_config.txt files in order to run the emulator properly, i.e. create the folder 'gpsp' under /root, copy gpsp, gba_bios.bin and game_config.txt into the folder.
 
 The same applies for other emulators, e.g. if you want to have fceux, create the folder 'fceux' under /root and copy the fceux executable to the folder.
 
-## 系统配置
+## System configuration
 
 Insert the SD card and mount it.
 
-### 自动挂载 fat 分区
+### automount fat partition
 
 ```
 mkdir /root/roms
@@ -712,7 +712,7 @@ vi /etc/fstab
 /dev/mmcblk0p3  /root/roms      vfat    defaults        0       0
 ```
 
-### 配置双端显示
+### configure terminal display
 
 ```
 vi /etc/inittab
@@ -722,7 +722,7 @@ ttyS0::respawn:-/bin/sh
 tty0::respawn:-/bin/sh
 ```
 
-### 启动后开启声音
+### turn on the sound after startup
 
 ```
 vi /etc/init.d/S99runOnBoot
@@ -734,7 +734,7 @@ amixer -c 0 sset 'Headphone',0 60% unmute
 chmod +x /etc/init.d/S99runOnBoot
 ```
 
-### 配置 SDL 环境
+### configure SDL environment
 
 ```
 vi /etc/profile
@@ -746,7 +746,7 @@ export SDL_NOMOUSE=1
 /root/startup.sh
 ```
 
-### 自启动模拟器
+### autostart the emulator
 
 ```
 vi /root/startup.sh
@@ -770,9 +770,9 @@ done
 chmod +x startup.sh
 ```
 
-## 制作镜像
+## Image mirroring
 
-### 创建工作目录
+### create a working directory
 
 ```
 mkdir ~/img
@@ -782,13 +782,13 @@ mkdir rootfs
 mkdir roms
 ```
 
-### 创建空白文件并分区
+### create a blank file and partition it
 
-分区表
+Partition table
 
-| 分区序号 | 起始地址 | 大小 | 内容 | 文件系统 |
+| Partition number | Start address | Size | Content | File system |
 | ---- | ---- | ---- | ---- | ---- |
-| 1 | 0 | 1M | u-boot-sunxi-with-spl.bin | 无 |
+| 1 | 0 | 1M | u-boot-sunxi-with-spl.bin | N/A |
 | 2 | 1 x 1024 x 1024 | 32M | zImage + sun8i-v3s-licheepi-zero-dock.dtb | ext4 |
 | 3 | 33 x 1024 x 1024 | 128M | rootfs | ext4 |
 | 4 | 161 x 1024 x 1024 | 剩余空间 | roms | fat |
@@ -801,22 +801,22 @@ sudo parted X-Boy_20221019.img mkpart primary ext4 67584s 329727s
 sudo parted X-Boy_20221019.img mkpart primary fat32 329728s 100%
 ```
 
-检查分区是否创建成功
+Check if the partitions have been created successfully.
 
 ```
 sudo parted X-Boy_20221019.img
 ```
 
-输入
+Type:
 
 ```
 print free
 
-# 退出
+# quit
 q
 ```
 
-### 将镜像文件虚拟成块设备
+### map the image into block devices
 
 ```
 sudo losetup -f --show X-Boy_20221019.img
@@ -824,17 +824,17 @@ sudo losetup -f --show X-Boy_20221019.img
 
 ![](/images/5.jpg)
 
-这里的 loop25 记录下来 ，以实际显示为准
+The loop device /dev/loop25 has been found and used by losetup here. On your computer it may be (and probably will be) a different loop device!
 
-挂载虚拟文件系统
+The partitions will be detected and mapped to your VFS (Virtual File System) after executing the following command:
 
 ```
 sudo kpartx -va /dev/loop25
 ```
 
-### 格式化块设备并且挂载
+### format the block devices and mount
 
-格式化分区
+Format the partitions:
 
 ```
 sudo mkfs.ext4 /dev/mapper/loop25p1
@@ -842,7 +842,7 @@ sudo mkfs.ext4 /dev/mapper/loop25p2
 sudo mkfs.vfat /dev/mapper/loop25p3
 ```
 
-挂载到之前创建的目录
+Mount them to the previously created folders:
 
 ```
 sudo mount /dev/mapper/loop25p1 ~/img/kernel/
@@ -850,21 +850,21 @@ sudo mount /dev/mapper/loop25p2 ~/img/rootfs/
 sudo mount /dev/mapper/loop25p3 ~/img/roms/
 ```
 
-### 烧录 uboot
+### burn U-Boot
 
 ```
 cd ~/v3s/u-boot/
 sudo dd if=u-boot-sunxi-with-spl.bin of=/dev/loop25 bs=512 seek=16
 ```
 
-### 写入内核和设备树
+### copy the kernel and the device tree
 
 ```
 sudo cp ~/v3s/linux/arch/arm/boot/zImage ~/img/kernel
 sudo cp ~/v3s/linux/arch/arm/boot/dts/sun8i-v3s-licheepi-zero-dock.dtb ~/img/kernel
 ```
 
-### 写入根文件系统
+### untar rootfs
 
 ```
 sudo tar xvf ~/v3s/buildroot-2019.08/output/images/rootfs.tar -C ~/img/rootfs
