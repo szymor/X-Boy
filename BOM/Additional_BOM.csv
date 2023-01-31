@@ -3,9 +3,10 @@ Quantity ,Name,Size,Description,Comment,LCSC Part Number
 4,Screw Ø2mm,Length 7mm (head excl.),"Oval head screw for plastic, PH",Minimum length 6mm (head excl.) Referenced to KBS3056 modified STL files!,
 4,Screw Ø2mm,Length 10mm (head excl.),"Oval head screw for plastic, PH",Minimum length 9mm (head excl.) Referenced to KBS3056 modified STL files!,
 2,Speaker,Up to 21x31x7mm,"Speaker 2W+, 4-8Ω",Rounded corners,
-1,Battery,,Li-Po / Li-Ion battery >800mAh,"Default charging current 830mA, selected by R22 (1.2kΩ)",
+1,Battery,,Li-Pol / Li-Ion battery >800mAh,"Default charging current 830mA, selected by R22 (1.2kΩ)",
 1,Ribbon,"Min. 120mm, p 0.5mm, th 0.3mm, 8P",KH-FFC-A0.5-8P-120MM  8 0.5mm Same Side 120mm,Buttons boards connection,C5124689
 1,Cable,"p 1.25mm, 2P",HX 1.25-2P ST 200mm 28AWG,"Speakers connection, double side (split to two parts)",C5221422
 1,Cable,"Min. 50mm, p 1.25mm, 4P",XF-12501504P4,"USB connection, double side, mirrored pinout ",C2980944
 1,Cable,"p 2.5mm, 2P",XF-25013002P,Battery connection,C2980951
 1,Display,3.2”,TFT_3.2_18P_SPI_ILI9341_240X320,,x
+1,Resistor,1206,7.5Ω 0.125W,LCD backlight bug,

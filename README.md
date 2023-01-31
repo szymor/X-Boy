@@ -901,3 +901,12 @@ sudo tar xvf ~/v3s/buildroot-2019.08/output/images/rootfs.tar -C ~/img/rootfs
 [V3s audio driver](https://blog.csdn.net/lengyuefeng212/article/details/120055703)
 
 [Making an image of imx6ull Linux system](https://blog.csdn.net/mzy2364/article/details/113364250)
+
+## Known bugs
+
+- LCD Backlight bug.
+
+## TODO
+
+- Use a mosfet as a main power switch.
+- Enlarge LCD1 connector's mounting pads (2) size, to ease hand soldering. Or redesign to e.g. XFCN-F0502-B-18-15T-R C2889974, FPC05018-09200 C496146.
