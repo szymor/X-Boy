@@ -42,7 +42,7 @@ I could not manage to download the image from the link above, so I (vamastah) cr
 - [U-Boot compilation](#u-boot-compilation)
 	- [download U-Boot](#download-u-boot)
 	- [modify include/configs/sun8i.h](#modify-includeconfigssun8ih)
-	- [compile U-Boot](#compile-uboot)
+	- [compile U-Boot](#compile-u-boot)
 - [Linux compilation](#linux-compilation)
 	- [download source code](#download-source-code)
 	- [modify the top-level Makefile](#modify-the-top-level-makefile)
@@ -56,7 +56,7 @@ I could not manage to download the image from the link above, so I (vamastah) cr
 	- [build](#build)
 - [SD card partitioning](#sd-card-partitioning)
 	- [partition the SD card](#partition-the-sd-card)
-	- [burn U-Boot](#burn-uboot)
+	- [burn U-Boot](#burn-u-boot)
 	- [copy the kernel and the device tree](#copy-the-kernel-and-the-device-tree)
 	- [untar rootfs](#untar-rootfs)
 - [Emulator compilation](#emulator-compilation)
@@ -73,7 +73,7 @@ I could not manage to download the image from the link above, so I (vamastah) cr
 	- [create a blank file and partition it](#create-a-blank-file-and-partition-it)
 	- [map the image into block devices](#map-the-image-into-block-devices)
 	- [format the block devices and mount](#format-the-block-devices-and-mount)
-	- [burn U-Boot](#burn-uboot-1)
+	- [burn U-Boot](#burn-u-boot-1)
 	- [copy the kernel and the device tree](#copy-the-kernel-and-the-device-tree-1)
 	- [untar rootfs](#untar-rootfs-1)
 - [Acknowledgements](#acknowledgements)
@@ -183,7 +183,7 @@ arm-linux-gnueabihf-gcc -v
 
 ## U-boot compilation
 
-### download uboot
+### download U-Boot
 
 ```
 mkdir ~/v3s && cd ~/v3s
