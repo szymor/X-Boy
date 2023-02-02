@@ -48,34 +48,34 @@ I could not manage to download the image from the link above, so I (vamastah) cr
 	- [modify the top-level Makefile](#modify-the-top-level-makefile)
 	- [configure ILI9341 LCD](#configure-ili9341-lcd)
 	- [compile](#compile)
-- [Buildroot rootfs building](#buildroot-根文件系统构建)
-	- [get Buildroot](#获取-buildroot)
-	- [basic configuration](#基本配置)
-	- [toolchain configuration](#编译链工具配置)
-	- [alsa, sdl, fbv configuration](#alsasdlfbv配置)
-	- [build](#编译-1)
-- [SD card partitioning](#tf-卡分区及烧录)
-	- [partition the SD card](#tf-卡分区)
-	- [burn U-Boot](#烧录-uboot)
-	- [copy the kernel and the device tree](#写入内核和设备树)
-	- [untar rootfs](#写入根文件系统)
-- [Emulator compilation](#编译模拟器)
-	- [compile gpSP](#编译-gpsp)
-	- [copy the executable](#复制可执行文件)
-- [System configuration](#系统配置)
-	- [automount fat partition](#自动挂载-fat-分区)
-	- [configure terminal display](#配置双端显示)
-	- [turn on the sound after startup](#启动后开启声音)
-	- [configure SDL environment](#配置-sdl-环境)
-	- [autostart the emulator](#自启动模拟器)
-- [Image mirroring](#制作镜像)
-	- [create a working directory](#创建工作目录)
-	- [create a blank file and partition it](#创建空白文件并分区)
-	- [map the image into block devices](#将镜像文件虚拟成块设备)
-	- [format the block devices and mount](#格式化块设备并且挂载)
-	- [burn U-Boot](#烧录-uboot-1)
-	- [copy the kernel and the device tree](#写入内核和设备树-1)
-	- [untar rootfs](#写入根文件系统-1)
+- [Buildroot rootfs building](#buildroot-rootfs-building)
+	- [get Buildroot](#get-buildroot)
+	- [basic configuration](#basic-configuration)
+	- [toolchain configuration](#toolchain-configuration)
+	- [alsa, sdl, fbv configuration](#alsa-sdl-fbv-configuration)
+	- [build](#build)
+- [SD card partitioning](#sd-card-partitioning)
+	- [partition the SD card](#partition-the-sd-card)
+	- [burn U-Boot](#burn-uboot)
+	- [copy the kernel and the device tree](#copy-the-kernel-and-the-device-tree)
+	- [untar rootfs](#untar-rootfs)
+- [Emulator compilation](#emulator-compilation)
+	- [compile gpSP](#compile-gpsp)
+	- [copy the executable](#copy-the-executable)
+- [System configuration](#system-configuration)
+	- [automount FAT partition](#automount-fat-partition)
+	- [configure terminal display](#configure-terminal-display)
+	- [turn on the sound after startup](#turn-on-the-sound-after-startup)
+	- [configure SDL environment](#configure-sdl-environment)
+	- [autostart the emulator](#autostart-the-emulator)
+- [Image mirroring](#image-mirroring)
+	- [create a working directory](#create-a-working-directory)
+	- [create a blank file and partition it](#create-a-blank-file-and-partition-it)
+	- [map the image into block devices](#map-the-image-into-block-devices)
+	- [format the block devices and mount](#format-the-block-devices-and-mount)
+	- [burn U-Boot](#burn-uboot-1)
+	- [copy the kernel and the device tree](#copy-the-kernel-and-the-device-tree-1)
+	- [untar rootfs](#untar-rootfs-1)
 - [Acknowledgements](#acknowledgements)
 - [References](#references)
 
@@ -694,15 +694,20 @@ make -j4
 ```
 ### copy the executable
 
-Copy the generated executable to a folder on the second partition of the SD card. The folder needs contain gba_bios.bin and game_config.txt files in order to run the emulator properly, i.e. create the folder 'gpsp' under /root, copy gpsp, gba_bios.bin and game_config.txt into the folder.
+Copy the generated executable to a folder on the second partition of the SD card. The folder needs to contain:
+- gba_bios.bin (preferably of md5sum value a860e8c0b6d573d191e4ec7db1b1e4f6),
+- game_config.txt (from the gpsp repository),
+- font.ttf (from the repo),
+- font_small.ttf (from the repo),
+in order to run the emulator properly, i.e. create the folder 'gpsp' under /root, copy gpsp and the other files into the folder.
 
-The same applies for other emulators, e.g. if you want to have fceux, create the folder 'fceux' under /root and copy the fceux executable to the folder.
+In order to run any GBA games, you need to put them into /root/roms/gba/ (i.e. the gba folder on the third partition of the SD card - look at the next steps how the partition is mounted into the VFS). Please use only legal ROMs!
 
 ## System configuration
 
 Insert the SD card and mount it.
 
-### automount fat partition
+### automount FAT partition
 
 ```
 mkdir /root/roms
@@ -791,10 +796,10 @@ Partition table
 | 1 | 0 | 1M | u-boot-sunxi-with-spl.bin | N/A |
 | 2 | 1 x 1024 x 1024 | 32M | zImage + sun8i-v3s-licheepi-zero-dock.dtb | ext4 |
 | 3 | 33 x 1024 x 1024 | 128M | rootfs | ext4 |
-| 4 | 161 x 1024 x 1024 | 剩余空间 | roms | fat |
+| 4 | 161 x 1024 x 1024 | remaining space | roms | FAT |
 
 ```
-dd if=/dev/zero of=X-Boy_20221019.img bs=512k count=512  && sync
+dd if=/dev/zero of=X-Boy_20221019.img bs=512k count=512 && sync
 sudo parted X-Boy_20221019.img mklabel msdos
 sudo parted X-Boy_20221019.img mkpart primary ext4 2048s 67583s
 sudo parted X-Boy_20221019.img mkpart primary ext4 67584s 329727s
