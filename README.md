@@ -3,7 +3,9 @@
 Original text by hsinyuwang  
 Translation and editing by vamastah
 
-Video presentation (Chinese) [https://www.bilibili.com/video/BV1JP4y1X7Uz](https://www.bilibili.com/video/BV1JP4y1X7Uz/?vd_source=2f25de86752ccc9cfafc4bcf1c352db1)
+Video by hsinyuwang: [click here](https://www.bilibili.com/video/BV1JP4y1X7Uz/?vd_source=2f25de86752ccc9cfafc4bcf1c352db1)
+
+Another video by kbs3056: [click here](https://www.youtube.com/watch?v=y-CCoxLRNvU)
 
 Pictures
 
@@ -699,6 +701,7 @@ Copy the generated executable to a folder on the second partition of the SD card
 - game_config.txt (from the gpsp repository),
 - font.ttf (from the repo),
 - font_small.ttf (from the repo),
+
 in order to run the emulator properly, i.e. create the folder 'gpsp' under /root, copy gpsp and the other files into the folder.
 
 In order to run any GBA games, you need to put them into /root/roms/gba/ (i.e. the gba folder on the third partition of the SD card - look at the next steps how the partition is mounted into the VFS). Please use only legal ROMs!
